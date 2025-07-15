@@ -3,4 +3,5 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/test', [App\Http\Controllers\TestController::class, 'test']);
+Route::get('/test/dbs', [App\Http\Controllers\TestController::class, 'testDbs']);
+Route::get('/test/rabbitmq', [App\Http\Controllers\TestController::class, 'testRabbitMQ']);
