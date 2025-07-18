@@ -15,7 +15,8 @@ RUN apk add --no-cache \
     autoconf \
     gcc \
     g++ \
-    make
+    make \
+    librdkafka-dev
 
 # Install PHP extensions
 RUN docker-php-ext-install \
@@ -35,6 +36,10 @@ RUN pecl install igbinary \
 # Install Redis PHP extension
 RUN pecl install --configureoptions 'enable-redis-igbinary="yes"' redis \
     && docker-php-ext-enable redis
+
+# Install rdkafka PHP extension for Kafka support
+RUN pecl install rdkafka \
+    && docker-php-ext-enable rdkafka
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
