@@ -297,7 +297,6 @@ class TestController extends Controller
                     ]
                 ], 500);
             }
-
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',
