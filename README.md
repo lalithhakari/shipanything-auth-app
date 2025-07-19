@@ -1,20 +1,102 @@
 # Auth Microservice
 
-This is the Auth microservice for the ShipAnything platform, handling authentication, authorization, and identity management.
+This is the Auth microservice for the ShipAnything platform, serving as the **centralized authentication and authorization gateway** for all protected services. It handles JWT token management, user authentication, and provides token validation for the NGINX API Gateway.
 
 ## Features
 
--   User authentication and authorization
--   JWT token management
--   Role-based access control
--   Identity verification
+-   User registration and authentication
+-   JWT token management (access tokens, refresh tokens)
+-   Centralized authorization for all microservices
+-   API Gateway integration with NGINX
+-   Token validation for inter-service communication
+-   Role-based access control (RBAC)
+-   Rate limiting and security features
+-   Internal auth validation endpoint for NGINX `auth_request`
 
-## Endpoints
+## Authentication Endpoints
 
--   `GET /health` - Health check
+### Public Endpoints (No Authentication Required)
+
+-   `POST /api/auth/register` - User registration
+-   `POST /api/auth/login` - User login
+-   `GET /health` - Service health check
+
+### Protected Endpoints (Require Bearer Token)
+
+-   `POST /api/auth/refresh` - Refresh access token
+-   `POST /api/auth/logout` - User logout
+-   `GET /api/auth/user` - Get authenticated user profile
+
+### Internal Endpoints (Container Network Only)
+
+-   `POST /api/auth/validate-token` - Token validation for NGINX gateway
 -   `GET /api/test/dbs` - Database connectivity test
 -   `GET /api/test/rabbitmq` - RabbitMQ connectivity test
 -   `GET /api/test/kafka` - Kafka connectivity test
+
+## 🔐 **Quick Usage Examples**
+
+### 1. Register a New User
+
+```bash
+curl -X POST http://auth.shipanything.test/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "John Doe",
+    "email": "john@example.com",
+    "password": "securepassword123",
+    "password_confirmation": "securepassword123"
+  }'
+```
+
+### 2. Login and Get Access Token
+
+```bash
+curl -X POST http://auth.shipanything.test/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "john@example.com",
+    "password": "securepassword123"
+  }'
+```
+
+### 3. Access Other Services with Token
+
+```bash
+# Use the token to access protected services
+curl -X GET http://location.shipanything.test/api/locations \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+## 🏗️ **API Gateway Integration**
+
+This service acts as the authentication provider for the NGINX API Gateway:
+
+```
+Client Request → NGINX Gateway → Auth Service (validate token) → Target Service
+```
+
+When you make requests to protected services (location, payments, booking, fraud), NGINX automatically:
+
+1. Intercepts the request at the gateway level
+2. Validates the Bearer token with this auth service via `/api/auth/validate-token`
+3. Forwards user context headers (`X-User-ID`, `X-User-Email`) to the target service
+4. Returns the response to the client
+
+**Key Integration Points:**
+
+-   **NGINX `auth_request` module**: Uses this service for token validation
+-   **Internal validation endpoint**: `/api/auth/validate-token` (container network only)
+-   **User context injection**: Provides user information to downstream services
+-   **Rate limiting**: Protects auth endpoints from abuse
+
+## Token Security
+
+-   **Access Tokens**: Expire in 15 days
+-   **Refresh Tokens**: Expire in 30 days
+-   **Personal Access Tokens**: Expire in 6 months
+-   **Rate Limiting**: 10 requests/minute for auth endpoints
+-   **Secure Storage**: Tokens are stateless JWT with secure signing
 
 ## Environment Variables
 
