@@ -19,6 +19,6 @@ class TokenService
 
     public function deleteCurrentToken(User $user): void
     {
-        $user->token()?->delete();
+        $user->currentAccessToken()?->delete();
     }
 }

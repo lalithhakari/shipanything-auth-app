@@ -10,12 +10,10 @@ Route::prefix('v1/auth')->name('api.v1.')->group(function () {
 
     // Internal route for NGINX auth_request (no middleware needed)
     Route::post('/validate-token', [AuthController::class, 'validateToken']);
-});
 
-// Protected routes (require authentication)
-Route::middleware('auth:api')->group(function () {
-    Route::prefix('auth')->group(function () {
-        Route::post('/logout', [AuthController::class, 'logout']);
+    // Protected routes (require authentication)
+    Route::middleware('auth:api')->group(function () {
+        Route::get('/logout', [AuthController::class, 'logout']);
         Route::get('/user', [AuthController::class, 'user']);
         Route::post('/refresh', [AuthController::class, 'refreshToken']);
     });
