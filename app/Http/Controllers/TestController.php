@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Redis;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
@@ -306,5 +307,11 @@ class TestController extends Controller
                 'rdkafka_loaded' => extension_loaded('rdkafka')
             ], 500);
         }
+    }
+
+    public function testMicroserviceConnection()
+    {
+        $res = Http::get('http://location.shipanything.test');
+        return $res->body();
     }
 }
